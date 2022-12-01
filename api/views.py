@@ -37,6 +37,12 @@ def login(request):
     return Response({'token': token.key},
                     status=HTTP_200_OK)
 
+@api_view(["POST"])
+@permission_classes((AllowAny,))
+def register(request):  
+    return Response({'token': 'in database'},status=HTTP_200_OK)
+
+
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication,])
 @permission_classes([IsAuthenticated,])
