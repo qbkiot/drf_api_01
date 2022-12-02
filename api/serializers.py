@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.validators import ValidationError
 from rest_framework.authtoken.models import Token
 #use password validation in next iteriation
+#add here validation of pass with lenght, special char, etc
 from django.contrib.auth.password_validation import validate_password
 
 class ItemSerializer(serializers.ModelSerializer):
