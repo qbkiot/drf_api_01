@@ -19,7 +19,10 @@ class UserSerializer(serializers.ModelSerializer):
     fields = ('username', 'email', 'password')
 
   def validate(self, attrs):
-    
+    userpassword = attrs['password']
+    #zdublownie z class User(models.Model)?
+    if len(userpassword)<5:
+      raise ValidationError("Pasword to short!")
     user_exists = User.objects.filter(username=attrs['username']).exists()
     email_exists = User.objects.filter(email=attrs['email']).exists()
     if user_exists:
