@@ -7,8 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code first 
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Copy repository contents via scp
       uses: qbkiot/drf_api_01@main
       env:
@@ -28,3 +27,6 @@ jobs:
         PORT: ${{ secrets.PORT }}
         KEY: ${{ secrets.SSHKEY }}
         script: ls
+        
+        
+        
