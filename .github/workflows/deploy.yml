@@ -11,7 +11,7 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Copy repository contents via scp
-      uses: qbkiot/drf_api_01@master
+      uses: qbkiot/drf_api_01@main
       env:
         HOST: ${{ secrets.HOST }}
         USERNAME: ${{ secrets.USERNAME }}
@@ -22,7 +22,7 @@ jobs:
         target: "/home/admin/drf_api_01-test"
 
     - name: Executing remote command
-      uses: appleboy/ssh-action@master
+      uses: qbkiot/drf_api_01@main
       with:
         host: ${{ secrets.HOST }}
         USERNAME: ${{ secrets.USERNAME }}
