@@ -8,7 +8,7 @@ jobs:
 
     steps:
     - name: Checkout code first 
-      uses: actions/checkout@main
+    - uses: actions/checkout@v2
     - name: Copy repository contents via scp
       uses: qbkiot/drf_api_01@main
       env:
