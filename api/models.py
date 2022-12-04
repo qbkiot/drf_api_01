@@ -14,7 +14,7 @@ class Item(models.Model):
 class User(models.Model):
     id = models.UUIDField(primary_key = True,default = uuid.uuid4, editable = False)
     username = models.CharField(max_length=20, unique=True)
-    password = models.CharField(min_length=6, max_length=32)
+    password = models.CharField(max_length=32)
     email = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
