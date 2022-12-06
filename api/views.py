@@ -1,8 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
-from .models import Item, User
-from .serializers import ItemSerializer, UserSerializer
+from .models import Item, User, Pet, Reminder
+from .serializers import ItemSerializer, UserSerializer, PetSerializer
 from django.http import HttpResponse
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
@@ -64,6 +64,22 @@ class SignUpView(generics.GenericAPIView):
 def register(request):  
     return Response({'token': 'in database'},status=HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes((AllowAny,))
+def getPets(request):
+    items = Pet.objects.all()
+    serializer = PetSerializer(items, many = True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes((AllowAny,))
+def add_pet(request):
+    serializer = PetSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response('Succesfully aded pet')
+    else:
+        return Response('There was unexpected error.')
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication,])

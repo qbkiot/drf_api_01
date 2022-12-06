@@ -1,4 +1,4 @@
-from .models import Item
+from .models import Item, Pet, Reminder
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
@@ -40,3 +40,23 @@ class UserSerializer(serializers.ModelSerializer):
     Token.objects.create(user=user)
     return user
     
+class PetSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Pet
+    fields = '__all__'
+
+  def validate(self, attrs):
+    name = attrs['name']
+    # wprowadzić walizację wszystkich parametrów (poza UUID)
+    if len(name)<3:
+      raise ValidationError("Name too short.")
+    # user_exists = User.objects.filter(username=attrs['username']).exists()
+    #if user_exists:
+    #  raise ValidationError("Username has already been used")
+    return super().validate(attrs)
+
+  def create(self, validated_data):
+    # update create method
+    pet = super(PetSerializer, self).create(validated_data)
+    pet.save()
+    return pet
