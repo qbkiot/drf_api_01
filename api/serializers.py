@@ -1,4 +1,4 @@
-from .models import Item, Pet, Reminder
+from .models import Item, SubItem, Pet, Reminder
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
@@ -7,11 +7,67 @@ from rest_framework.authtoken.models import Token
 #add here validation of pass with lenght, special char, etc
 from django.contrib.auth.password_validation import validate_password
 
-class ItemSerializer(serializers.ModelSerializer):
+class ReminderSerializer(serializers.ModelSerializer):
   class Meta:
-    model = Item
+    model = Reminder
     fields = '__all__'
+    read_only_fields = ("id",) 
 
+  def validate(self, attrs):
+    # wprowadzić walizację wszystkich parametrów (poza UUID)
+    if len(attrs['name'])<3:
+      raise ValidationError("Name too short.")
+    return super().validate(attrs)
+
+class PetSerializer(serializers.ModelSerializer):
+  reminders = ReminderSerializer(many=True, required=False, )
+  class Meta:
+    model = Pet
+    fields = ['id', 'name', 'type', 'desc', 'photo', 'birthdate', 'icon', 'color' ,'reminders']
+    read_only_fields = ("id",)
+    extra_kwargs = {
+      'reminders': {'required': False}
+    }
+
+  #to chyba właściwie nie działa XD
+  def validate(self, attrs):
+    # wprowadzić walizację wszystkich parametrów (poza UUID)
+    if len(attrs['name'])<3:
+      raise ValidationError("Name too short.")
+    pet_exists = User.objects.filter(username=attrs['name']).exists()
+    if pet_exists:
+      raise ValidationError("Username has already been used")
+    return super().validate(attrs)
+
+  def create(self, validated_data):
+    pet = Pet.objects.create(**validated_data)
+    if validated_data.get('reminders', None) is not None:
+      subitems_data = validated_data.pop('reminders')
+      for subitem_data in subitems_data:
+        Reminder.objects.create(pet=pet, **subitem_data)
+    return pet
+
+  # def update(self, instance, validated_data):
+  #   reminders = validated_data.pop('reminders')
+  #   instance.save()
+  #   return instance
+
+  # def delete(self, instance, validated_data):
+  #   pass
+
+
+  """
+  def update(self, instance, validated_data):
+    subItems_data = validated_data.pop('items')
+    instance.name = validated_data.get('name', instance.name)
+    instance.save()
+    # many contacts
+    for contact_data in subItems_data:
+      contact = SubItem.objects.get(pk=contact_data['id']) # this will crash if the id is invalid though
+      contact.name = contact_data.get('name', contact.name)
+      contact.save()
+    return instance
+  """
 class UserSerializer(serializers.ModelSerializer):
   password = serializers.CharField(write_only=True)
   class Meta:
@@ -40,23 +96,23 @@ class UserSerializer(serializers.ModelSerializer):
     Token.objects.create(user=user)
     return user
     
-class PetSerializer(serializers.ModelSerializer):
+class SubItemSerializer(serializers.ModelSerializer):
   class Meta:
-    model = Pet
+    model = SubItem
     fields = '__all__'
-
-  def validate(self, attrs):
-    name = attrs['name']
-    # wprowadzić walizację wszystkich parametrów (poza UUID)
-    if len(name)<3:
-      raise ValidationError("Name too short.")
-    # user_exists = User.objects.filter(username=attrs['username']).exists()
-    #if user_exists:
-    #  raise ValidationError("Username has already been used")
-    return super().validate(attrs)
-
+ 
+class ItemSerializer(serializers.ModelSerializer):
+  subitems = SubItemSerializer(many=True, required=False, read_only=False)
+  class Meta:
+    model = Item
+    fields = ['id', 'name', 'created', 'subitems']
+    extra_kwargs = {
+        'subitems': {'required': False}
+    }
   def create(self, validated_data):
-    # update create method
-    pet = super(PetSerializer, self).create(validated_data)
-    pet.save()
-    return pet
+    item = Item.objects.create(**validated_data)
+    if validated_data.get('subitems', None) is not None:
+      subitems_data = validated_data.pop('subitems')
+      for subitem_data in subitems_data:
+        SubItem.objects.create(item=item, **subitem_data)
+    return item

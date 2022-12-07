@@ -1,8 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
-from .models import Item, User, Pet, Reminder
-from .serializers import ItemSerializer, UserSerializer, PetSerializer
+from .models import Item, SubItem, User, Pet, Reminder
+from .serializers import ItemSerializer, SubItemSerializer, UserSerializer, PetSerializer, ReminderSerializer
 from django.http import HttpResponse
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework import generics, status
+from rest_framework import viewsets
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
@@ -37,8 +38,12 @@ def login(request):
         return Response({'error': 'Invalid Credentials'},
                         status=HTTP_404_NOT_FOUND)
     token, _ = Token.objects.get_or_create(user=user)
-    return Response({'token': token.key},
-                    status=HTTP_200_OK)
+    loggeduser = username
+    return Response({
+        'loggeduser': loggeduser, 
+        'user': user.id, 
+        'token': token.key
+        }, status=HTTP_200_OK)
 
 @permission_classes((AllowAny,))
 class SignUpView(generics.GenericAPIView):
@@ -57,7 +62,6 @@ class SignUpView(generics.GenericAPIView):
             return Response(data=response, status=status.HTTP_201_CREATED)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(["POST"])
 @permission_classes((AllowAny,))
@@ -81,15 +85,43 @@ def add_pet(request):
     else:
         return Response('There was unexpected error.')
 
+#@api_view(['GET'])
+#@authentication_classes([TokenAuthentication,])
+#@permission_classes([IsAuthenticated,])
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication,])
-@permission_classes([IsAuthenticated,])
+@permission_classes((AllowAny,))
 def getData(request):
     items = Item.objects.all()
     serializer = ItemSerializer(items, many = True)
     return Response(serializer.data)
 
+
+@permission_classes((AllowAny,))
+class ItemsView(viewsets.ModelViewSet):
+    queryset = Item.objects.all()
+    serializer_class = ItemSerializer
+
+@permission_classes((AllowAny,))
+class SubItemsView(viewsets.ModelViewSet):
+    queryset = SubItem.objects.all()
+    serializer_class = SubItemSerializer
+
+
+@permission_classes((AllowAny,))
+class PetsView(viewsets.ModelViewSet):
+    queryset = Pet.objects.all()
+    serializer_class = PetSerializer
+
+@permission_classes((AllowAny,))
+class RemindersView(viewsets.ModelViewSet):
+    queryset = Reminder.objects.all()
+    serializer_class = ReminderSerializer
+    
+
+
+"""
 @api_view(['POST'])
+@permission_classes((AllowAny,))
 def addItem(request):
     serializer = ItemSerializer(data=request.data)
     name_to_create = request.data.get("name")
@@ -99,9 +131,19 @@ def addItem(request):
         serializer.save()
         return Response(serializer.data)
     else:
-        return Response('There was unexpected error.')
-
-
+        return Response(TypeError)
+        #return Response('There was unexpected error.')
+"""
+"""
+@permission_classes((AllowAny,))
+class ItemView(APIView):
+    def post(self, request):
+        serializer = ItemSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+"""
 @api_view(['PUT'])
 def editItem(request, name):
     if Item.objects.filter(name = name).exists():
