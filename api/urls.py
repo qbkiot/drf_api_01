@@ -24,5 +24,6 @@ urlpatterns = [
     path('deleteall/', views.deleteAll),
     path('addpet/', views.add_pet),
     path('getpets/', views.getPets),
+    path('appendreminder/', views.appendReminder),
     
 ]

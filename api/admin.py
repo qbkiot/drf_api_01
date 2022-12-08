@@ -1,10 +1,21 @@
 from django.contrib import admin
-from .models import Item, SubItem, Pet, Reminder
+from .models import Item, SubItem, Pet, Reminder, MyUser
 
-# Register your models here.
-admin.site.register(Reminder)
-admin.site.register(Pet)
-#admin.site.register(SubItem)
+@admin.register(Pet)
+class PetAdmis(admin.ModelAdmin):
+    list_display = ['name', 'id', 'owner']
+    list_filter = ['owner',]
+
+@admin.register(Reminder)
+class ReminderAdmin(admin.ModelAdmin):
+    list_display = ['name', 'id', 'pet']
+    list_filter = ['pet',]
+@admin.register(MyUser)
+class MyUserAdmin(admin.ModelAdmin):
+    list_display = ['username', 'id', 'password']
+    
+"""
+# old item,subitem admin registration
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
     list_display = ['name', 'created']
@@ -14,3 +25,4 @@ class ItemAdmin(admin.ModelAdmin):
 class SubItemAdmin(admin.ModelAdmin):
     list_display = ['name', 'id','created']
     list_filter = ['created',]
+"""

@@ -1,6 +1,7 @@
-from django.db import models
 import uuid
+from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 """
@@ -24,7 +25,7 @@ class SubItem(models.Model):
         return self.name
 
 """
-Model for user
+Model for (custom) user
 """
 class User(models.Model):
     id = models.UUIDField(primary_key = True,default = uuid.uuid4, editable = False)
@@ -35,13 +36,16 @@ class User(models.Model):
     def __str__(self):
         return self.id
 
+class MyUser(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
 """
 Models for Bouwl app api
 ->when complete delete Item/SubItem and swap
 """
 class Pet(models.Model):
-    #owner = 
     id = models.UUIDField(primary_key = True,default = uuid.uuid4, editable = False)
+    owner = models.UUIDField(blank=False)
     name = models.CharField(max_length=30)
     type = models.CharField(max_length=30)
     desc = models.CharField(max_length=30)

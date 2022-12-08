@@ -5,13 +5,15 @@ from .models import Item, SubItem, User, Pet, Reminder
 from .serializers import ItemSerializer, SubItemSerializer, UserSerializer, PetSerializer, ReminderSerializer
 from django.http import HttpResponse
 from django.contrib.auth import authenticate
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from rest_framework.decorators import authentication_classes
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import permission_classes
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers
-from django.views.decorators.csrf import csrf_exempt
+
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework import generics, status
@@ -21,8 +23,6 @@ from rest_framework.status import (
     HTTP_404_NOT_FOUND,
     HTTP_200_OK
 )
-
-#token b8fb864909b667a75d7410a9dd3ed202418e22a1
 
 @csrf_exempt
 @api_view(["POST"])
@@ -62,18 +62,57 @@ class SignUpView(generics.GenericAPIView):
             return Response(data=response, status=status.HTTP_201_CREATED)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+"""
 @api_view(["POST"])
 @permission_classes((AllowAny,))
 def register(request):  
     return Response({'token': 'in database'},status=HTTP_200_OK)
+"""
+
+# GET pets by its owner
 
 @api_view(['GET'])
 @permission_classes((AllowAny,))
 def getPets(request):
-    items = Pet.objects.all()
+    owner = request.data.get("owner")
+    items = Pet.objects.filter(owner=owner)
     serializer = PetSerializer(items, many = True)
     return Response(serializer.data)
+
+
+
+"""
+NOT WORKINK
+"""
+@api_view(['PUT'])
+@permission_classes((AllowAny,))
+def appendReminder(request):
+    pet_id = request.data.get('pet')
+    if Pet.objects.filter(id = pet_id).exists():
+        pet = Pet.objects.get(id=pet_id)
+        data = {"reminders": request.data.get('reminders')}
+        print(data)
+        serializer = PetSerializer(instance=pet, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response('succesful')
+        else:
+            return Response({"error":"validation error"})
+    else:
+        return Response({"error":"can't find that name ;("})
+
+class PetUpdateViewSet(APIView):
+    permission_classes = [IsAuthenticated, ]
+  # https://www.appsloveworld.com/django/100/72/write-an-explicit-update-method-for-serializer
+    def put(self, request):
+        pet_id = request.data.get('pet')
+        pet = Pet.objects.get(id=pet_id)
+        serializer = PetSerializer(pet, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 @permission_classes((AllowAny,))

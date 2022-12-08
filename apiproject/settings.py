@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 
 # when using AbstractUser model
 # AUTH_USER_MODEL = "accounts.User"
+AUTH_USER_MODEL = 'api.MyUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -118,6 +119,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
